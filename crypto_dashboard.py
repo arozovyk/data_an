@@ -89,7 +89,7 @@ def update_graph(selected_symbol):
         showgrid=True,
         gridwidth=1,
         gridcolor="gray",
-         tickmode="array",
+         tickmode="auto",
         autorange=True,  # Automatically adjust the range to the data
     )
 
