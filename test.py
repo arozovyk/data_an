@@ -35,22 +35,24 @@ def update(attr, old, new):
     end_date = date_range_slider.value_as_date[1]
     crypto_data = get_crypto_data(ticker, start_date, end_date)
     source.data = ColumnDataSource.from_df(crypto_data)
-    
+
     arima_forecast = fit_arima(crypto_data['Close'])
     garch_volatility = fit_garch(crypto_data['Close'])
-    
+
     last_date = crypto_data.index[-1]
-    future_dates = pd.date_range(last_date + datetime.timedelta(days=1), periods=30, closed='right')
-    
+    future_dates = pd.date_range(
+        last_date + datetime.timedelta(days=1), periods=30, closed='right')
+
     arima_source.data = {'Date': future_dates, 'Forecast': arima_forecast}
     garch_source.data = {'Date': future_dates, 'Volatility': garch_volatility}
 
-    p_arima.x_range.start = p.x_range.start
-    p_arima.x_range.end = (datetime.datetime.fromtimestamp(p.x_range.start / 1000).replace(day=1) + datetime.timedelta(days=31)).timestamp() * 1000
-    p_garch.x_range.start = p.x_range.start
-    p_garch.x_range.end = (datetime.datetime.fromtimestamp(p.x_range.start / 1000).replace(day=1) + datetime.timedelta(days=31)).timestamp() * 1000
+    p_arima.x_range.start = p.x_range.end
+    p_arima.x_range.end = (datetime.datetime.fromtimestamp(
+        p.x_range.end / 1000) + datetime.timedelta(days=30)).timestamp() * 1000
 
-
+    p_garch.x_range.start = p.x_range.end
+    p_garch.x_range.end = (datetime.datetime.fromtimestamp(
+        p.x_range.end / 1000) + datetime.timedelta(days=30)).timestamp() * 1000
 
 
 popular_cryptos = ['BTC-USD', 'ETH-USD', 'BNB-USD', 'ADA-USD', 'XRP-USD',
@@ -70,7 +72,8 @@ source = ColumnDataSource(initial_data)
 arima_source = ColumnDataSource(data={'Date': [], 'Forecast': []})
 garch_source = ColumnDataSource(data={'Date': [], 'Volatility': []})
 
-p = figure(x_axis_type='datetime', width=800, height=400,
+
+p = figure(x_axis_type='datetime', width=900, height=500,
            title='Historical Crypto Prices', tools='pan,wheel_zoom,box_zoom,reset,save')
 p.line(x='Date', y='Close', source=source,
        color='blue', legend_label='Close Price')
@@ -94,7 +97,6 @@ p_arima.yaxis.axis_label = 'Price'
 hover_arima = HoverTool(tooltips=[('Date', '@Date{%F}'), ('Forecast', '@Forecast{0.2f}')],
                         formatters={'@Date': 'datetime'})
 p_arima.add_tools(hover_arima)
- 
 
 # GARCH plot
 p_garch = figure(x_axis_type='datetime', width=800, height=400, title='GARCH Volatility',
@@ -103,14 +105,14 @@ p_garch.line(x='Date', y='Volatility', source=garch_source,
              color='green', legend_label='GARCH Volatility')
 p_garch.yaxis.axis_label = 'Volatility'
 
+
 hover_garch = HoverTool(tooltips=[('Date', '@Date{%F}'), ('Volatility', '@Volatility{0.2f}')],
                         formatters={'@Date': 'datetime'})
 p_garch.add_tools(hover_garch)
-p_garch.x_range.start = p.x_range.start
-p_arima.x_range.end = (datetime.datetime.fromtimestamp(p.x_range.start / 1000).replace(day=1) + datetime.timedelta(days=31)).timestamp() * 1000
+
 
 layout = row(column(crypto_select, date_range_slider),
-             column(p, p_arima, p_garch))
+             column(p, p_arima))
 
 curdoc().add_root(layout)
 curdoc().title = 'Bokeh Crypto Dashboard with ARIMA and GARCH'
