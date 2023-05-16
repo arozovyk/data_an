@@ -128,8 +128,8 @@ hover_rsi = HoverTool(tooltips=[(
     'Date', '@Date{%F}'), ('RSI', '@RSI{0.00}')], formatters={'@Date': 'datetime'})
 p_rsi.add_tools(hover_rsi)
 
-layout = row(column(crypto_select, date_range_slider),
-             column(p, p_volume), column(p_arima, p_rsi))
+layout = row(
+    column(crypto_select, date_range_slider, p, p_volume), column(p_arima, p_rsi))
 
 curdoc().add_root(layout)
 curdoc().title = 'Bokeh Crypto Dashboard with ARIMA and RSI'
